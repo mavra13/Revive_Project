@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="el">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Σουγιούλ</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css"
+        integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
+    <script src="js/vue.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script> -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+    <div class="jumbotron jumbotron-fluid h-25 pt-3 pb-3">
+        <div class="container-fluid">
+            <div class="d-inline-block mr-5 ml-5">
+                <h2 class="display-4 mb-0">Μιχάλης Σουγιούλ</h2>
+            </div>
+
+            <div class="d-inline-block mr-5 ml-5">
+                <p class="lead mb-0">Αποδελτίωση τραγουδιών Μιχάλη Σουγιούλ.<br>Δεκαετία: 1948 - 1958.</p>
+            </div>
+
+        </div>
+    </div>
+    <div id="songApp" class="container-fluid">
+        <div class="row">
+            <div class="col">
+                <nav>
+                    <ul class="nav nav-pills mb-2 justify-content-end" id="pills-tab" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="edit-mode-tab" data-toggle="pill" href="#editMode" role="tab"
+                                aria-controls="edit" aria-selected="true">Edit</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="display-mode-tab" data-toggle="pill" href="#displayMode" role="tab"
+                                aria-controls="display" aria-selected="false">Display</a>
+                        </li>
+                    </ul>
+                </nav>
+
+                <div class="tab-content" id="pills-tabContent">
+
+                    <div class="tab-pane active" id="editMode" role="tabpanel" aria-labelledby="edit-mode-tab">
+                        <nav>
+                            <ul class="nav nav-tabs" id="myTab" role="tablist">
+                                <li class="nav-item">
+                                    <a class="nav-link active" id="songs-tab" data-toggle="tab" href="#tableSongs"
+                                        role="tab" aria-controls="songs" aria-selected="true">Τραγούδια</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" id="singers-tab" data-toggle="tab" href="#tableSingers"
+                                        role="tab" aria-controls="singers" aria-selected="false">Τραγουδιστές</a>
+                                </li>
+                            </ul>
+                        </nav>
+
+                        <h2 v-if="!songs || songs.length < 1">Loading...</h2>
+                        <div class="tab-content">
+
+                            <!-- songs-tab content -->
+                            <div class="tab-pane active" id="tableSongs" role="tabpanel" aria-labelledby="songs-tab">
+                                <!-- search-bar and add button -->
+                                <div class="input-group mb-2">
+                                    <div class="input-group-prepend">
+                                        <button class="btn btn-info" type="button" id="button-addon2"
+                                            @click="clearSearch">Clear</button>
+                                    </div>
+                                    <input type="text" class="form-control" placeholder="Search term"
+                                        v-model="searchTermSongs">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-info" type="button"
+                                            id="button-addon2">{{visibleSongsCount}}
+                                            found</button>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <button type="button" class="btn btn-outline-success mb-2"
+                                        @click="addSong">+</button>
+                                </div>
+                                <!-- main content -->
+                                <table class="table table-bordered table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">#</th>
+                                            <th scope="col">Όνομα Τραγουδιού <span class="fa fa-sort"
+                                                    @click="sortSongName"></span></th>
+                                            <th scope="col">Συνθέτης</th>
+                                            <th scope="col">Συνδημιουργοί <span class="fa fa-sort"
+                                                    @click="sortcoComposer"></span></th>
+                                            <th scope="col">Ερμηνευτές <span class="fa fa-sort"
+                                                    @click="sortsingers"></span>
+                                            </th>
+                                            <th scope="col">Ρυθμός</th>
+                                            <th scope="col">Τόπος Έκδοσης</th>
+                                            <th scope="col">Έτος Έκδοσης <span class="fa fa-sort"
+                                                    @click="sortyearOfPublish"></span></th>
+                                            <th scope="col">Επεξεργασία</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr is="song-tr" v-bind:song="song" v-bind:index="index"
+                                            v-for="(song, index) in visibleSongs" v-bind:key="song.id"
+                                            v-on:delete-requested="deleteSongVer(song)"
+                                            v-on:edit-requested="editSong(song)">
+                                        </tr>
+
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- singers-tab content -->
+                            <div class="tab-pane" id="tableSingers" role="tabpanel" aria-labelledby="singers-tab">
+                                <!-- search-bar and add button -->
+                                <div class="input-group mb-2">
+                                    <div class="input-group-prepend">
+                                        <button class="btn btn-info" type="button" id="button-addon2"
+                                            @click="clearSearch">Clear</button>
+                                    </div>
+                                    <input type="text" class="form-control" placeholder="Search term"
+                                        v-model="searchTermSingers">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-info" type="button"
+                                            id="button-addon2">{{visibleSingersCount}}
+                                            found</button>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <button type="button" class="btn btn-outline-success mb-2"
+                                        @click="addSinger">+</button>
+                                </div>
+                                <!-- main content -->
+                                <table class="table table-bordered table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">#</th>
+                                            <th scope="col">Ερμηνευτές <span class="fa fa-sort"
+                                                    @click="sortsingerName"></span>
+                                            </th>
+                                            <th scope="col">Τραγούδια <span class="fa fa-sort"
+                                                    @click="sortsongs"></span>
+                                            </th>
+                                            <th scope="col">Επεξεργασία</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr is="singer-tr" v-bind:singer="singer" v-bind:index="index"
+                                            v-for="(singer, index) in visibleSingers" v-bind:key="singer.id"
+                                            v-on:delete-requested="deleteSingerVer(singer)"
+                                            v-on:edit-requested="editSinger(singer)">
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane" id="displayMode" role="tabpanel" aria-labelledby="display-mode-tab">
+                        <nav>
+                            <ul class="nav nav-tabs" id="myTab" role="tablist">
+                                <li class="nav-item">
+                                    <a class="nav-link active" id="songs-display-tab" data-toggle="tab" href="#tableSongsDisplay"
+                                        role="tab" aria-controls="songs" aria-selected="true">Τραγούδια</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" id="singers-display-tab" data-toggle="tab" href="#tableSingersDisplay"
+                                        role="tab" aria-controls="singers" aria-selected="false">Τραγουδιστές</a>
+                                </li>
+                            </ul>
+                        </nav>
+
+                        <div class="tab-content">
+
+                            <!-- songs-tab content -->
+                            <div class="tab-pane active" id="tableSongsDisplay" role="tabpanel" aria-labelledby="songs-display-tab">
+                                <div class="row">
+                                    <!-- This is the song card component-->
+                                    <song-card v-bind:song="song" v-for="song in visibleSongs" v-bind:key="song.id"
+                                        class="w-25 ml-2 mr-2 mb-2"></song-card>
+                                </div>
+                            </div>
+
+                            <!-- singers-tab content -->
+                            <div class="tab-pane" id="tableSingersDisplay" role="tabpanel" aria-labelledby="singers-display-tab">
+                                <div class="row">
+                                    <!-- This is the singer card component-->
+                                    <singer-card v-bind:singer="singer" v-for="singer in visibleSingers" v-bind:key="singer.id"
+                                        class="w-25 ml-2 mr-2 mb-2"></singer-card>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit/add new modal for songs table-->
+        <div id="addSongModal" class="modal" tabindex="-1" role="dialog" aria-labelledby="addSongModalLabel"
+            v-bind:class="{'show': showModalSongs}"
+            v-bind:style="{display: showModalSongs?'block':'none', 'padding-right': '17px'}" aria-modal="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addSongModalLabel">Στοιχεία Τραγουδιού</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"
+                            @click="closeModalSongs">
+                            <span aria-hidden="true">x</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <label for="inputSongName">Όνομα Τραγουδιού</label>
+                                    <input type="text" class="form-control" id="inputSongName"
+                                        placeholder="Όνομα Τραγουδιού" v-model="modalSong.songName">
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label for="inputComposerName">Συνθέτης</label>
+                                    <input type="text" class="form-control" id="inputComposerName"
+                                        placeholder="Συνθέτης" v-model="modalSong.composer">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="inputCoCreators">Συνδημιουργοί</label>
+                                <input type="text" class="form-control" id="inputCoCreators" placeholder="Συνδημιουργοί"
+                                    v-model="modalSong.coCreators">
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <label for="inputSingers">Ερμηνευτές</label>
+                                    <input type="text" class="form-control" id="inputSingers" placeholder="Ερμηνευτές"
+                                        v-model="modalSong.singers">
+                                </div>
+                                <div class="form-group col-md-5">
+                                    <label for="dropdownSelect">Λίστα Ερμηνευτών</label>
+                                    <select id="dropdownSelect" class="form-control" v-model="modalSingersSelected"
+                                        data-live-search="true">
+                                        <option v-for="singer in visibleSingers" v-bind:key="singer.id">
+                                            {{singer.fields.singerName}}</option>
+                                    </select>
+                                </div>
+                                <div class="form-group col-md-1">
+                                    <label for="add">Add</label>
+                                    <button id="add" type="button" class="btn btn-outline-secondary"
+                                        @click="addSingersButton">+</button>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-4">
+                                    <label for="inputBeat">Ρυθμός</label>
+                                    <input type="text" class="form-control" id="inputBeat" placeholder="2/4, 9/8 κλπ"
+                                        v-model="modalSong.beat">
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label for="inputPOPublish">Τόπος Έκδοσης</label>
+                                    <input type="text" class="form-control" id="inputPOPublish"
+                                        placeholder="Αθήνα, Αμερική κλπ" v-model="modalSong.placeOfPublish">
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label for="inputYOPublish">Έτος Έκδοσης</label>
+                                    <select id="inputYOPublish" class="form-control" v-model="modalSong.yearOfPublish">
+                                        <option>1948</option>
+                                        <option>1949</option>
+                                        <option>1950</option>
+                                        <option>1951</option>
+                                        <option>1952</option>
+                                        <option>1953</option>
+                                        <option>1954</option>
+                                        <option>1955</option>
+                                        <option>1956</option>
+                                        <option>1957</option>
+                                        <option>1958</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                            @click="closeModalSongs">Close</button>
+                        <button type="button" class="btn btn-primary" @click="saveModal">Save changes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit/addNew modal for singers table-->
+        <div id="addSingerModal" class="modal" tabindex="-1" role="dialog" aria-labelledby="addSingerModalLabel"
+            v-bind:class="{'show': showModalSingers}"
+            v-bind:style="{display: showModalSingers?'block':'none', 'padding-right': '17px'}" aria-modal="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addSingerModalLabel">Στοιχεία Τραγουδιστή</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"
+                            @click="closeModalSingers">
+                            <span aria-hidden="true">x</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <div class="form-group">
+                                <label for="inputSingers">Ερμηνευτές</label>
+                                <input type="text" class="form-control" id="inputSingers" placeholder="Ερμηνευτές"
+                                    v-model="modalSingers.singerName">
+                            </div>
+                            <div class="form-group">
+                                <label for="inputSongs">Τραγούδια</label>
+                                <input type="text" class="form-control" id="inputSongs" placeholder="Τραγούδια"
+                                    v-model="modalSingers.songs" readonly>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <label for="dropdownSelect">Λίστα Τραγουδιών</label>
+                                    <select id="dropdownSelect" class="form-control" v-model="modalSongsSelected"
+                                        data-live-search="true">
+                                        <option v-for="song in visibleSongs" v-bind:key="song.id">
+                                            {{song.fields.songName}}</option>
+                                    </select>
+                                </div>
+                                <div class="form-group col-md-1">
+                                    <label for="add">Add</label>
+                                    <button id="add" type="button" class="btn btn-outline-secondary"
+                                        @click="addSongsButton">+</button>
+                                </div>
+                                <div class="form-group col-md-1">
+                                    <label for="remove">Remove</label>
+                                    <button id="remove" type="button" class="btn btn-outline-danger"
+                                        @click="removeSongsButton">+</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                            @click="closeModalSingers">Close</button>
+                        <button type="button" class="btn btn-primary" @click="saveSingerModal">Save changes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete verification modal for songs table -->
+        <div is="delete-modal" v-bind:class="{'show': showModDelSongs}"
+            v-bind:style="{display: showModDelSongs?'block':'none', 'padding-right': '17px'}"
+            v-on:delete-requested="deleteSong(modalDelSong)" v-on:close-requested="closeModDelSongs">
+        </div>
+
+        <!-- Delete verification modal for singers table -->
+        <div is="delete-modal" v-bind:class="{'show': showModDelSingers}"
+            v-bind:style="{display: showModDelSingers?'block':'none', 'padding-right': '17px'}"
+            v-on:delete-requested="deleteSinger(modalDelSinger)" v-on:close-requested="closeModDelSingers">
+        </div>
+    </div>
+    <script src="js/app.js"></script>
+</body>
+
+</html>
